@@ -9,20 +9,59 @@ import {
 } from "react-native";
 
 import { useState } from "react";
+import Checkbox from "expo-checkbox";
+import RadioGroup from "react-native-radio-buttons-group";
+import { useForm, Controller } from "react-hook-form";
 
 import HomeCalendar from "@/components/Calendar";
+import TextInputController from "@/components/TextInputController";
 
 export default function Index() {
+  const [hasStudy, setHasStudy] = useState(false);
   const [highlightDay, setHighlightDay] = useState([]);
   const [date, setDate] = useState(new Date());
-  const [study, setStudy] = useState(false);
+  const [selectedFocus, setSelectedFocus] = useState();
   const [minutes, setMinutes] = useState(0);
   const [focus, setFocus] = useState(1);
   const [tips, setTips] = useState("");
 
-  console.log(
-    date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate()
-  );
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const submit = (data) => {
+    console.log(data);
+  };
+  const radioButtons = [
+    {
+      id: "1id",
+      label: "1label",
+      value: "1value",
+    },
+    {
+      id: 2,
+      label: 2,
+      value: 2,
+    },
+    {
+      id: 3,
+      label: 3,
+      value: 3,
+    },
+    {
+      id: 4,
+      label: 4,
+      value: 4,
+    },
+    {
+      id: 5,
+      label: 5,
+      value: 5,
+    },
+  ];
+
   function increaseDate() {
     setDate(new Date(date.setDate(date.getDate() + 1)));
   }
@@ -46,46 +85,84 @@ export default function Index() {
     setTips(e.target.value);
   }
 
-  /* function handleSubmit(e) {
-       e.preventDefault();
-   
-       fetch("/api/submit", {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json",
-         },
-         body: JSON.stringify({
-           date:
-             date.getFullYear() +
-             "/" +
-             (date.getMonth() + 1) +
-             "/" +
-             date.getDate(),
-           highlightDay: date.toDateString(),
-           study: study,
-           minutes: minutes,
-           focus: focus,
-           tips: tips,
-         }),
-       })
-         .then((response) => response.json())
-         .then((data) => {
-           console.log("questo è data", data);
-   
-           setHighlightDay([...highlightDay, data]);
-           navigate("/tips");
-         });
-     } */
-  return <HomeCalendar />;
+  function handleSubmition(e) {
+    e.preventDefault();
+
+    fetch("/api/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        date:
+          date.getFullYear() +
+          "/" +
+          (date.getMonth() + 1) +
+          "/" +
+          date.getDate(),
+        highlightDay: date.toDateString(),
+        study: study,
+        minutes: minutes,
+        focus: focus,
+        tips: tips,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("questo è data", data);
+
+        setHighlightDay([...highlightDay, data]);
+        navigate("/tips");
+      });
+  }
+
+  return (
+    <View sytle={styles.homepageForm}>
+      <HomeCalendar date={date} />
+      <Text>Did you study chess today?</Text>
+      <Controller
+        control={control}
+        name="study"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Checkbox value={value} onBlur={onBlur} onValueChange={onChange} />
+        )}
+      />
+
+      <Text>How much did you study?</Text>
+      <TextInputController
+        control={control}
+        name="minutes"
+        keyboardType="numeric"
+      />
+
+      <Text>What was your focus level?</Text>
+
+      <Controller
+        control={control}
+        name="focus"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <RadioGroup
+            radioButtons={radioButtons}
+            selectedId={value}
+            onPress={onChange}
+            layout="row"
+            value={value}
+          />
+        )}
+      />
+      <TextInputController control={control} name="tips" />
+
+      <Button title="submit" onPress={handleSubmit(submit)} />
+      {/*      <Pressable onPress={handleSubmit} style={styles.submit}>
+        <Text style={styles.submitText}>submit</Text>
+      </Pressable> */}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   homepageForm: {
-    width: 310,
     flex: 1,
-    marginBottom: 100,
-
-    fontSize: 30,
     flexDirection: "column",
     alignItems: "center",
   },
@@ -99,7 +176,19 @@ const styles = StyleSheet.create({
     width: 60,
     height: 20,
   },
-
+  submit: {
+    margin: 25,
+    width: "auto",
+    height: 40,
+    backgroundColor: "#2143EE",
+    padding: 10,
+    borderRadius: 15,
+  },
+  submitText: {
+    fontSize: 16,
+    color: "#FAEBD7",
+    textAlign: "center",
+  },
   button: {
     marginTop: 10,
   },
@@ -114,59 +203,9 @@ const styles = StyleSheet.create({
     margin: 10,
     color: "antiquewhite",
   },
+
+  tips: {
+    borderWidth: 1,
+    margin: 15,
+  },
 });
-
-{
-  /* <View>
-      <Text>homepage</Text>
-
-      <View style={styles.homepageForm}>
-        <HomeCalendar
-          increaseDate={increaseDate}
-          decreaseDate={decreaseDate}
-          handleDateChange={handleDateChange}
-          date={date}
-        />
-
-        <Text>Did you study chess today?</Text>
-        {/*  <Switch
-          value={study}
-          onValueChange={() => {
-            setStudy(!study);
-            console.log("this is study", study);
-          }}
-          style={styles.study}
-        /> */
-}
-/* 
-        <Text>How much did you study (in minutes)?</Text>
-        <TextInput
-          onChangeText={(text) => setMinutes(text)}
-          value={minutes}
-          keyboardType="numeric"
-          style={styles.minutesInput}
-        />
-
-        <Text>What was your focus level?</Text>
-        <View id="focus-View">
-          {[1, 2, 3, 4, 5].map((level) => (
-            <Button
-              title={`${level}`}
-              key={level}
-              onPress={() => selectFocus(level)}
-            />
-          ))}
-        </View>
-
-        <Text>What are your key takeaways from this study session?</Text>
-        <TextInput
-          multiline
-          numberOfLines={4}
-          onChangeText={handleTipsChange}
-          value={tips}
-          style={styles.textarea}
-        />
-
-        <Pressable title="Submit" style={styles.button} />
-      </View>
-    </View> */

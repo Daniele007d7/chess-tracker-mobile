@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import { Calendar, CalendarList, Agenda } from "react-native-calendars";
 import { View, Text, Button, Pressable, StyleSheet } from "react-native";
 
@@ -8,6 +9,8 @@ export default function HomeCalendar({
   decreaseDate,
   handleDateChange,
 }) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
   /*const [highlightDays, setHighlightDays] = useState([]);
   useEffect(() => {
     fetch("/api/calendar")
@@ -19,46 +22,93 @@ export default function HomeCalendar({
   }, []);
 
   useEffect(() => {
-    const days = highlightDays.map((day) => {
+    const days = highlightDays.map((day) => { 
       return new Date(day.responseDate);
     });
   }, [highlightDays]); */
+
+  const formattedDate = currentDate.toLocaleDateString("en-CA");
   return (
     <View style={styles.formContainer}>
-      <Calendar
-        current={"2024-04-29"}
-        markedDates={{
-          "2024-04-29": { selected: true, marked: true, selectedColor: "blue" },
-        }}
-        onDayPress={(day) => {
-          console.log("selected day", day);
-        }}
-      />
+      <View style={styles.dataContainer}>
+        <Pressable
+          onPress={() =>
+            setCurrentDate(
+              new Date(currentDate.setDate(currentDate.getDate() - 1))
+            )
+          }
+          style={({ pressed }) => [
+            styles.changeDateBtn,
+            { backgroundColor: pressed ? "#FF7F7F" : "white" },
+          ]}
+        >
+          <Text style={styles.buttonText}>←</Text>
+        </Pressable>
+        <Text
+          onPress={(n) => setShowCalendar(!showCalendar)}
+          style={styles.dateText}
+        >
+          {currentDate.getDate() +
+            "/" +
+            (currentDate.getMonth() + 1) +
+            "/" +
+            currentDate.getFullYear()}
+        </Text>
+
+        <Pressable
+          onPress={() =>
+            setCurrentDate(
+              new Date(currentDate.setDate(currentDate.getDate() + 1))
+            )
+          }
+          style={({ pressed }) => [
+            styles.changeDateBtn,
+            { backgroundColor: pressed ? "lightgreen" : "white" },
+          ]}
+        >
+          <Text style={styles.buttonText}>→</Text>
+        </Pressable>
+      </View>
+      {showCalendar && (
+        <Calendar
+          current={currentDate.toDateString()}
+          markedDates={{
+            [formattedDate]: {
+              selected: true,
+              marked: true,
+              selectedColor: "green",
+            },
+          }}
+          onDayPress={(day) => {
+            console.log(day.dateString);
+            setCurrentDate(new Date(day.timestamp));
+          }}
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  date: {
-    fontFamily: "DM Serif Text",
+  dateText: {
     fontSize: 25,
-    color: "antiquewhite",
-    width: 500,
-    textAlign: "center",
   },
-  formContainer: { flex: 1 },
+  formContainer: {},
 
-  calendarContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+  calendarContainer: {},
+  buttonText: {
+    fontSize: 24,
   },
 
   changeDateBtn: {
     height: 50,
     width: 50,
+    fontSize: 24,
   },
 
-  TextData: {
-    padding: 5,
+  dataContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 });
