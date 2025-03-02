@@ -1,161 +1,66 @@
-import {
-  Text,
-  View,
-  Button,
-  TextInput,
-  Switch,
-  Pressable,
-  StyleSheet,
-} from "react-native";
+import { Text, View, Pressable, Modal, StyleSheet } from "react-native";
 
 import { useState } from "react";
-import Checkbox from "expo-checkbox";
-import RadioGroup from "react-native-radio-buttons-group";
-import { useForm, Controller } from "react-hook-form";
+import StudyQuestion from "@/components/StudyQuestion";
+import StepWatch from "@/components/StepWatch";
 
-import HomeCalendar from "@/components/Calendar";
-import TextInputController from "@/components/TextInputController";
+import {
+  useFonts,
+  Montserrat_700Bold,
+  Montserrat_700Bold_Italic,
+  Montserrat_600SemiBold,
+  Montserrat_400Regular,
+} from "@expo-google-fonts/montserrat";
 
 export default function Index() {
-  const [hasStudy, setHasStudy] = useState(false);
-  const [highlightDay, setHighlightDay] = useState([]);
-  const [date, setDate] = useState(new Date());
-  const [selectedFocus, setSelectedFocus] = useState();
-  const [minutes, setMinutes] = useState(0);
-  const [focus, setFocus] = useState(1);
-  const [tips, setTips] = useState("");
+  const [fontLoaded] = useFonts({
+    useFonts,
+    Montserrat_700Bold,
+    Montserrat_700Bold_Italic,
+    Montserrat_600SemiBold,
+    Montserrat_400Regular,
+  });
+  const [showModal, setShowModal] = useState(false);
+  const [showStepWatch, setStepWatch] = useState(false);
+  const [seconds, setSeconds] = useState("0");
+  const [minutes, setMinutes] = useState("0");
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
-
-  const submit = (data) => {
-    console.log(data);
-  };
-  const radioButtons = [
-    {
-      id: "1id",
-      label: "1label",
-      value: "1value",
-    },
-    {
-      id: 2,
-      label: 2,
-      value: 2,
-    },
-    {
-      id: 3,
-      label: 3,
-      value: 3,
-    },
-    {
-      id: 4,
-      label: 4,
-      value: 4,
-    },
-    {
-      id: 5,
-      label: 5,
-      value: 5,
-    },
-  ];
-
-  function increaseDate() {
-    setDate(new Date(date.setDate(date.getDate() + 1)));
-  }
-
-  function decreaseDate() {
-    setDate(new Date(date.setDate(date.getDate() - 1)));
-  }
-
-  function handleDateChange(selectedDay) {
-    setDate(selectedDay);
-
-    setShowCalendar(false);
-  }
-
-  function selectFocus(number) {
-    setFocus(number);
-    console.log(number);
-  }
-
-  function handleTipsChange(e) {
-    setTips(e.target.value);
-  }
-
-  function handleSubmition(e) {
-    e.preventDefault();
-
-    fetch("/api/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        date:
-          date.getFullYear() +
-          "/" +
-          (date.getMonth() + 1) +
-          "/" +
-          date.getDate(),
-        highlightDay: date.toDateString(),
-        study: study,
-        minutes: minutes,
-        focus: focus,
-        tips: tips,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("questo è data", data);
-
-        setHighlightDay([...highlightDay, data]);
-        navigate("/tips");
-      });
-  }
-
+  console.log(seconds, minutes);
   return (
-    <View sytle={styles.homepageForm}>
-      <HomeCalendar date={date} />
-      <Text>Did you study chess today?</Text>
-      <Controller
-        control={control}
-        name="study"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Checkbox value={value} onBlur={onBlur} onValueChange={onChange} />
-        )}
+    <View style={styles.homepageForm}>
+      <Text style={styles.hello}>
+        {showStepWatch ? "FOCUS" : "WELCOME BACK!"}
+      </Text>
+      <View style={styles.centerView}>
+        <Pressable
+          onPress={() => {
+            setStepWatch(!showStepWatch);
+          }}
+          disabled={showStepWatch}
+          style={styles.newSessionBtn}
+        >
+          {showStepWatch ? (
+            <StepWatch
+              setStepWatch={setStepWatch}
+              setShowModal={setShowModal}
+              seconds={seconds}
+              setSeconds={setSeconds}
+              minutes={minutes}
+              setMinutes={setMinutes}
+            />
+          ) : (
+            <Text style={styles.btnText}>START A NEW STUDY SESSION</Text>
+          )}
+        </Pressable>
+      </View>
+
+      <StudyQuestion
+        minutes={minutes}
+        setShowModal={setShowModal}
+        showModal={showModal}
+        setMinutes={setMinutes}
+        setSeconds={setSeconds}
       />
-
-      <Text>How much did you study?</Text>
-      <TextInputController
-        control={control}
-        name="minutes"
-        keyboardType="numeric"
-      />
-
-      <Text>What was your focus level?</Text>
-
-      <Controller
-        control={control}
-        name="focus"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <RadioGroup
-            radioButtons={radioButtons}
-            selectedId={value}
-            onPress={onChange}
-            layout="row"
-            value={value}
-          />
-        )}
-      />
-      <TextInputController control={control} name="tips" />
-
-      <Button title="submit" onPress={handleSubmit(submit)} />
-      {/*      <Pressable onPress={handleSubmit} style={styles.submit}>
-        <Text style={styles.submitText}>submit</Text>
-      </Pressable> */}
     </View>
   );
 }
@@ -163,19 +68,23 @@ export default function Index() {
 const styles = StyleSheet.create({
   homepageForm: {
     flex: 1,
-    flexDirection: "column",
+    backgroundColor: "#3D4944",
+  },
+  hello: {
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 45,
+    textAlign: "center",
+    color: "#FAFBFA",
+    marginTop: 10,
+  },
+
+  centerView: {
+    flex: 1,
+    marginTop: 140,
     alignItems: "center",
+    textAlign: "center",
   },
 
-  study: {
-    width: 40,
-    height: 40,
-  },
-
-  minutesTextInput: {
-    width: 60,
-    height: 20,
-  },
   submit: {
     margin: 25,
     width: "auto",
@@ -195,8 +104,6 @@ const styles = StyleSheet.create({
 
   headersContainer: {
     width: 100,
-
-    justifyContent: "center",
   },
 
   headersTitle: {
@@ -207,5 +114,22 @@ const styles = StyleSheet.create({
   tips: {
     borderWidth: 1,
     margin: 15,
+  },
+
+  newSessionBtn: {
+    backgroundColor: "#3EE44F",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+    borderRadius: 200,
+    width: 250,
+    height: 250,
+    borderWidth: 7,
+    borderColor: "#0F0F0F",
+  },
+  btnText: {
+    fontSize: 25,
+    fontFamily: "Montserrat_600SemiBold",
+    color: "#F3F6F3",
   },
 });
