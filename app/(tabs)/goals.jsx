@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     fontFamily: "Montserrat_400Regular",
-    fontSize: 20,
+    fontSize: 21,
     width: 270,
     marginHorizontal: 10,
     marginVertical: 10,
