@@ -38,7 +38,7 @@ app.get("/api/tips", async (req, res) => {
 
 app.post("/api/submit", async (req, res) => {
   const date = new Date(req.body.date);
-  console.log(req.session.id);
+  console.log(req.session.userId);
   const formattedDate = date.toLocaleDateString("en-CA");
   const [result] = await connection.query(
     "INSERT INTO responses (userID, responseDate,  responseMinutes, responseFocus, responseTips) VALUES(?,?, ?, ?,?)",
@@ -56,14 +56,30 @@ app.post("/api/submit", async (req, res) => {
 });
 
 app.post("/api/signup", async (req, res) => {
+  const username = req.body.username;
+  console.log(username);
+
   const salt = bcrypt.genSaltSync(10);
   const hash = bcrypt.hashSync(req.body.password, salt);
-  const [result] = await connection.query(
-    "INSERT INTO users(name, password) VALUES (?,?)",
-    [req.body.username, hash]
-  );
 
-  res.json(true);
+  try {
+    const [result, error] = await connection.query(
+      "INSERT INTO users(name, password) VALUES (?,?)",
+      [req.body.username, hash]
+    );
+
+    const [id] = await connection.query("SELECT id FROM users WHERE name=? ", [
+      req.body.username,
+    ]);
+
+    console.log(id);
+    req.session.userId = id[0].id;
+    console.log(id[0].id);
+    res.json(true);
+  } catch (err) {
+    console.log(err);
+    res.json(false);
+  }
 });
 
 app.get("/api/goal", async (req, res) => {
@@ -128,10 +144,12 @@ app.get("", (req, res) => {
 });
 
 app.get("/api/stats", async (req, res) => {
+  console.log("id", req.session.userId);
   const [result] = await connection.query(
     "SELECT responseDate, responseMinutes, responseFocus FROM responses WHERE userID = ?",
     [req.session.userId]
   );
+
   res.json(result);
 });
 
@@ -141,26 +159,34 @@ app.post("/api/login", async (req, res) => {
   const hash = bcrypt.hashSync(req.body.password, 10);
 
   console.log(hash);
-  const [user] = await connection.query("SELECT * FROM users WHERE name=? ", [
-    req.body.username,
-  ]);
-  console.log(user);
-  const userCredential = user[0];
-  const isPasswordCorrect = bcrypt.compareSync(
-    req.body.password,
-    userCredential.password
-  );
 
-  if (isPasswordCorrect) {
-    req.session.auth = true;
-    req.session.userId = userCredential.id;
-    console.log(req.session.userId);
-  } else {
+  try {
+    const [user] = await connection.query("SELECT * FROM users WHERE name=? ", [
+      req.body.username,
+    ]);
+    console.log(user);
+    const userCredential = user[0];
+    const isPasswordCorrect = bcrypt.compareSync(
+      req.body.password,
+      userCredential.password
+    );
+    console.log("this is userCred", isPasswordCorrect);
+    console.log(userCredential.id);
+    if (isPasswordCorrect) {
+      req.session.auth = true;
+      req.session.userId = userCredential.id;
+      console.log(req.session.userId);
+    } else {
+      req.session.auth = false;
+    }
+  } catch (err) {
+    console.log(err);
     req.session.auth = false;
   }
-
+  console.log("the real ", req.session.userId);
   res.json(req.session.auth);
 });
+
 app.get("/api/auth", (req, res) => {
   res.json("false");
 });

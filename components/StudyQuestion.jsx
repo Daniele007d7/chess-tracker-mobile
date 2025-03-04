@@ -57,7 +57,7 @@ export default function StudyQuestion({
     setMinutes("0");
     setSeconds("0");
 
-    fetch("http://10.0.2.2/api/submit", {
+    fetch("http://10.0.2.2:3000/api/submit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

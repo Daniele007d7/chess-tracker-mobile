@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import TextInputController from "@/components/TextInputController";
 import { AuthContext } from "../../components/AuthContext.jsx";
 import { Slot, useRouter } from "expo-router";
-import { useContext, useEffect } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link } from "expo-router";
 import {
   useFonts,
@@ -15,6 +15,7 @@ import {
 
 export default function login() {
   const { setIsLogged } = useContext(AuthContext);
+  const [wrongPassword, setWrongPassword] = useState();
   const router = useRouter();
 
   const [fontLoaded] = useFonts({
@@ -50,32 +51,39 @@ export default function login() {
         setIsLogged(data);
         if (data) {
           router.push("/(tabs)");
+        } else {
+          setWrongPassword(true);
         }
       });
   }
 
   return (
     <View style={styles.backgroundColor}>
-      <Text style={styles.title}>CHESS TRACKER</Text>
-      <Text style={styles.text}>LOGIN</Text>
-      <Text style={styles.formTitle}>username</Text>
-      <TextInputController name="username" control={control} />
-      <Text style={styles.formTitle}>password</Text>
-      <TextInputController
-        name="password"
-        control={control}
-        secureTextEntry={true}
-      />
+      <View style={{ marginHorizontal: 10 }}>
+        <Text style={styles.title}>CHESS TRACKER</Text>
+        <Text style={styles.text}>LOGIN</Text>
+        {wrongPassword && (
+          <Text style={styles.wrongPassword}>WRONG PASSWORD</Text>
+        )}
+        <Text style={styles.formTitle}>username</Text>
+        <TextInputController name="username" control={control} />
+        <Text style={styles.formTitle}>password</Text>
+        <TextInputController
+          name="password"
+          control={control}
+          secureTextEntry={true}
+        />
 
-      <Pressable onPress={handleSubmit(submit)} style={styles.loginBtn}>
-        <Text style={styles.submitBtnText}>submit</Text>
-      </Pressable>
-      <Pressable
-        style={styles.signupBtn}
-        onPress={() => router.push("/signup")}
-      >
-        <Text style={styles.signupBtnText}>or sign up</Text>
-      </Pressable>
+        <Pressable onPress={handleSubmit(submit)} style={styles.loginBtn}>
+          <Text style={styles.submitBtnText}>submit</Text>
+        </Pressable>
+        <Pressable
+          style={styles.signupBtn}
+          onPress={() => router.push("/signup")}
+        >
+          <Text style={styles.signupBtnText}>or sign up</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -86,7 +94,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontFamily: "Montserrat_700Bold",
     color: "#DEDEDE",
-    marginLeft: 15,
+
     marginBottom: 30,
   },
   backgroundColor: {
@@ -102,7 +110,7 @@ const styles = StyleSheet.create({
   },
   formTitle: {
     fontFamily: "Montserrat_700Bold_Italic",
-    marginLeft: 15,
+
     color: "#DEDEDE",
     fontSize: 24,
   },
@@ -111,7 +119,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 15,
     backgroundColor: "#02DC4D",
-    marginHorizontal: 15,
   },
   submitBtnText: {
     textAlign: "center",
@@ -121,11 +128,16 @@ const styles = StyleSheet.create({
   },
   signupBtn: {
     marginTop: 20,
-    marginLeft: 12,
   },
   signupBtnText: {
     fontSize: 18,
     color: "#F2F3F3",
     fontFamily: "Montserrat_600SemiBold",
+  },
+  wrongPassword: {
+    fontFamily: "Montserrat_600SemiBold",
+    fontSize: 18,
+    color: "#C83434",
+    marginBottom: 10,
   },
 });

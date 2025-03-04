@@ -36,6 +36,7 @@ export default function StatScreen() {
       fetch("http://10.0.2.2:3000/api/stats")
         .then((response) => response.json())
         .then((data) => {
+          console.log("0cisiamo");
           data.sort(
             (a, b) => new Date(a.responseDate) - new Date(b.responseDate)
           );

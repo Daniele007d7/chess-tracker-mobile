@@ -4,11 +4,12 @@ import { useForm, Controller } from "react-hook-form";
 import TextInputController from "@/components/TextInputController";
 import { AuthContext } from "../../components/AuthContext.jsx";
 import { Slot, useRouter } from "expo-router";
-import { useContext } from "react";
+import { useState } from "react";
 import { Link } from "expo-router";
 
 export default function login() {
   const router = useRouter();
+  const [existingUser, setExistingUser] = useState();
 
   const {
     control,
@@ -31,29 +32,38 @@ export default function login() {
 
         if (data) {
           router.push("/(tabs)");
+        } else {
+          setExistingUser(true);
         }
       });
   }
 
   return (
     <View style={styles.backgroundColor}>
-      <Text style={styles.title}>CHESS TRACKER</Text>
-      <Text style={styles.text}>SIGNUP</Text>
-      <Text style={styles.formTitle}>username</Text>
-      <TextInputController name="username" control={control} />
-      <Text style={styles.formTitle}>password</Text>
-      <TextInputController
-        name="password"
-        control={control}
-        secureTextEntry={true}
-      />
-      <Pressable onPress={handleSubmit(submit)} style={styles.submitBtn}>
-        <Text style={styles.submitBtnText}>submit</Text>
-      </Pressable>
+      <View style={{ marginHorizontal: 10 }}>
+        <Text style={styles.title}>CHESS TRACKER</Text>
+        <Text style={styles.text}>SIGNUP</Text>
+        {existingUser && (
+          <Text style={styles.existingUser}>
+            THERE IS ALREADY AN USER WITH THE SAME NAME
+          </Text>
+        )}
+        <Text style={styles.formTitle}>username</Text>
+        <TextInputController name="username" control={control} />
+        <Text style={styles.formTitle}>password</Text>
+        <TextInputController
+          name="password"
+          control={control}
+          secureTextEntry={true}
+        />
+        <Pressable onPress={handleSubmit(submit)} style={styles.submitBtn}>
+          <Text style={styles.submitBtnText}>submit</Text>
+        </Pressable>
 
-      <Pressable style={styles.loginBtn} onPress={() => router.push("/")}>
-        <Text style={styles.signupBtnText}>or login</Text>
-      </Pressable>
+        <Pressable style={styles.loginBtn} onPress={() => router.push("/")}>
+          <Text style={styles.signupBtnText}>or login</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -75,12 +85,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontFamily: "Montserrat_700Bold",
     color: "#DEDEDE",
-    marginLeft: 15,
+
     marginBottom: 30,
   },
   formTitle: {
     fontFamily: "Montserrat_700Bold_Italic",
-    marginLeft: 15,
+
     color: "#DEDEDE",
     fontSize: 24,
   },
@@ -92,7 +102,6 @@ const styles = StyleSheet.create({
   },
   loginBtn: {
     marginTop: 20,
-    marginLeft: 12,
   },
   signupBtnText: {
     fontSize: 18,
@@ -111,6 +120,12 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 15,
     backgroundColor: "#02DC4D",
-    marginHorizontal: 15,
+  },
+  existingUser: {
+    fontFamily: "Montserrat_600SemiBold",
+    fontSize: 18,
+    color: "#C83434",
+    marginBottom: 10,
+    textAlign: "center",
   },
 });
