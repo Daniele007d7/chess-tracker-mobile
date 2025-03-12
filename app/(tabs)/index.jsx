@@ -44,6 +44,7 @@ export default function Index() {
               setStepWatch={setStepWatch}
               setShowModal={setShowModal}
               seconds={seconds}
+              showStepWatch={showStepWatch}
               setSeconds={setSeconds}
               minutes={minutes}
               setMinutes={setMinutes}

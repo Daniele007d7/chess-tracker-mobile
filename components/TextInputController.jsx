@@ -9,6 +9,7 @@ export default function TextInputController({ name, control, ...props }) {
     <Controller
       control={control}
       name={name}
+      {...props}
       render={({ field: { onChange, onBlur, value } }) => (
         <TextInput
           style={styles.textInput}

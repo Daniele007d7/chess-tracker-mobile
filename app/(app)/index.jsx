@@ -5,7 +5,7 @@ import TextInputController from "@/components/TextInputController";
 import { AuthContext } from "../../components/AuthContext.jsx";
 import { Slot, useRouter } from "expo-router";
 import { useState, useContext, useEffect } from "react";
-import { Link } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import {
   useFonts,
   Montserrat_700Bold,
@@ -48,13 +48,18 @@ export default function login() {
       .then((response) => response.json())
       .then((data) => {
         console.log("data", data);
-        setIsLogged(data);
-        if (data) {
+        setIsLogged(data.auth);
+        if (data.auth) {
           router.push("/(tabs)");
         } else {
           setWrongPassword(true);
         }
+        saveData("token", data.token);
       });
+  }
+
+  async function saveData(key, token) {
+    await SecureStore.setItemAsync(key, token);
   }
 
   return (
@@ -65,13 +70,25 @@ export default function login() {
         {wrongPassword && (
           <Text style={styles.wrongPassword}>WRONG PASSWORD</Text>
         )}
+
         <Text style={styles.formTitle}>username</Text>
-        <TextInputController name="username" control={control} />
+        {errors.username && (
+          <Text style={styles.error}>YOU NEED TO TYPE THE USERNAME</Text>
+        )}
+        <TextInputController
+          name="username"
+          control={control}
+          rules={{ required: true }}
+        />
         <Text style={styles.formTitle}>password</Text>
+        {errors.password && (
+          <Text style={styles.error}>YOU NEED TO TYPE THE PASSWORD</Text>
+        )}
         <TextInputController
           name="password"
           control={control}
           secureTextEntry={true}
+          rules={{ required: true }}
         />
 
         <Pressable onPress={handleSubmit(submit)} style={styles.loginBtn}>
@@ -135,6 +152,12 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_600SemiBold",
   },
   wrongPassword: {
+    fontFamily: "Montserrat_600SemiBold",
+    fontSize: 18,
+    color: "#C83434",
+    marginBottom: 10,
+  },
+  error: {
     fontFamily: "Montserrat_600SemiBold",
     fontSize: 18,
     color: "#C83434",

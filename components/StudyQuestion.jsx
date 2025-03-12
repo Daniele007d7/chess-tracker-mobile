@@ -40,13 +40,15 @@ export default function StudyQuestion({
   const {
     control,
     handleSubmit,
+    reset,
 
-    formState: { errors },
+    formState: { errors, isSubmitSuccessful },
   } = useForm();
 
   console.log("minuti", minutes);
 
   const submit = (data) => {
+    reset();
     console.log("this is data", data);
     const updatedData = {
       ...data,
@@ -66,7 +68,9 @@ export default function StudyQuestion({
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("questo è data", data);
+        if (data) {
+          setShowModal(false);
+        }
       });
   };
   const radioButtons = [
@@ -117,6 +121,7 @@ export default function StudyQuestion({
     },
   ];
 
+  console.log(errors);
   return (
     <Modal visible={showModal}>
       <View
@@ -128,10 +133,12 @@ export default function StudyQuestion({
         }}
       >
         <Text style={styles.text}>What was your focus level?</Text>
-
+        {errors.focus && (
+          <Text style={styles.error}>YOU SHOULD SELECT A NUMBER</Text>
+        )}
         <Controller
           control={control}
-          name="focus"
+          rules={{ required: true }}
           render={({ field: { onChange, onBlur, value } }) => (
             <RadioGroup
               radioButtons={radioButtons}
@@ -141,15 +148,19 @@ export default function StudyQuestion({
               containerStyle={{ justifyContent: "center" }}
             />
           )}
+          name="focus"
         />
 
         <Text style={styles.text}>What is your take away?</Text>
-        <TextInputController control={control} name="tips" />
+        <TextInputController
+          control={control}
+          name="tips"
+          rules={{ required: true }}
+        />
 
         <Pressable
           onPress={() => {
             handleSubmit(submit)();
-            setShowModal(false);
           }}
           style={styles.submitBtn}
         >
@@ -187,7 +198,7 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat_400Regular",
     fontSize: 30,
     marginTop: 20,
-    marginBottom: 5,
+    marginBottom: 15,
     textAlign: "center",
     marginHorizontal: 5,
     color: "#F5F5F6",
@@ -199,5 +210,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 15,
     marginTop: 20,
+  },
+  error: {
+    fontFamily: "Montserrat_600SemiBold",
+    fontSize: 18,
+    color: "#C83434",
+    marginBottom: 10,
   },
 });

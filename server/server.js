@@ -27,12 +27,12 @@ const connection = await mysql.createConnection({
 });
 
 app.get("/api/tips", async (req, res) => {
-  console.log(req.session);
+  console.log(req.session.id);
   const [result] = await connection.query(
     "SELECT responseID, responseTips FROM responses WHERE userID = ?  ORDER BY  responseDate  DESC  LIMIT 7",
     [req.session.userId]
   );
-  console.log(result);
+  console.log("user", req.session.userId);
   res.json(result);
 });
 
@@ -51,7 +51,7 @@ app.post("/api/submit", async (req, res) => {
       req.body.tips,
     ]
   );
-
+  res.json(true);
   console.log(req.body);
 });
 
@@ -74,6 +74,7 @@ app.post("/api/signup", async (req, res) => {
 
     console.log(id);
     req.session.userId = id[0].id;
+
     console.log(id[0].id);
     res.json(true);
   } catch (err) {
@@ -155,6 +156,7 @@ app.get("/api/stats", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   console.log("ciao");
+
   const salt = bcrypt.genSaltSync(10);
   const hash = bcrypt.hashSync(req.body.password, 10);
 
@@ -176,15 +178,34 @@ app.post("/api/login", async (req, res) => {
       req.session.auth = true;
       req.session.userId = userCredential.id;
       console.log(req.session.userId);
+      const [result] = await connection.query(
+        "INSERT INTO sessions (userID, token) VALUES (?,?)",
+        [req.session.userId, req.session.id]
+      );
     } else {
       req.session.auth = false;
     }
   } catch (err) {
-    console.log(err);
+    console.log("erroreee", err);
     req.session.auth = false;
   }
   console.log("the real ", req.session.userId);
-  res.json(req.session.auth);
+  res.json({ auth: req.session.auth, token: req.session.id });
+});
+
+app.post("/api/session", async (req, res) => {
+  console.log("la req", req.body);
+  const [result] = await connection.query(
+    "SELECT * FROM sessions WHERE token = ?",
+    [req.body.sessionId]
+  );
+  console.log(result);
+  console.log("eccolo", result[0].userID);
+  req.session.userId = result[0].userID;
+
+  console.log(req.session.id);
+
+  res.json(result.length > 0);
 });
 
 app.get("/api/auth", (req, res) => {

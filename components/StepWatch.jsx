@@ -1,6 +1,8 @@
 import { View, Text, Pressable, Modal, StyleSheet } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function StepWatch({
   seconds,
@@ -9,21 +11,22 @@ export default function StepWatch({
   setMinutes,
   setStepWatch,
   setShowModal,
+  showStepWatch,
 }) {
   const [stopWatchId, setStopWatchId] = useState();
   const [startDate, setStartDate] = useState();
   const [isRunning, setIsRunning] = useState(false);
-  const [delta, setDelta] = useState(0);
+  const [lastStop, setLastStop] = useState(0);
 
   function handleStart() {
-    const date = new Date(); // tempo che è passato da quando lho stoppato
+    const date = new Date();
+
     setStartDate(date);
     setIsRunning(true);
 
     const id = setInterval(() => {
       const differentDate = new Date();
-
-      const elapsedTime = differentDate - date + delta;
+      const elapsedTime = differentDate - date + lastStop;
 
       setSeconds(String(Math.floor((elapsedTime / 1000) % 60)));
       setMinutes(String(Math.floor((elapsedTime / 1000 / 60) % 60)));
@@ -35,7 +38,7 @@ export default function StepWatch({
     setIsRunning(false);
     clearInterval(stopWatchId);
     console.log(startDate);
-    setDelta((prev) => {
+    setLastStop((prev) => {
       console.log(typeof startDate);
       return prev + (new Date() - startDate);
     });
@@ -72,7 +75,6 @@ export default function StepWatch({
           onPress={() => {
             setStepWatch(false);
             setShowModal(true);
-
             setIsRunning(false);
             setStartDate(0);
             clearInterval(stopWatchId);
